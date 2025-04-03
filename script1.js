@@ -51,11 +51,11 @@ function atualizaPersonagem() {
     if (personagem.pulando) {
         personagem.y -= personagem.velocidade_y
         personagem.velocidade_y -= gravidade
-    }
-    if (personagem.y >= canvas.height - 50) {
-        personagem.y = canvas.height - 50
-        personagem.velocidade_y = 0
-        personagem.pulando = false
+        if (personagem.y >= canvas.height - 50) {
+            personagem.y = canvas.height - 50
+            personagem.velocidade_y = 0
+            personagem.pulando = false
+        }
     }
 }
 
