@@ -14,6 +14,9 @@ class Entidade{
         ctx.fillRect(this.x, this.y, this.largura, this.altura)
     }
 }
+class Personagem extends Entidade{
+    
+}
 class Jogo{
     constructor(){
         this.loop = this.loop.bind(this)
@@ -23,6 +26,7 @@ class Jogo{
         resquestAnimationFrame(this.loop)
     }
 }
+
 const entidade = new Entidade(100, 100, 50, 50, 'red')
 const jogo = new Jogo()
 jogo.loop(entidade)
