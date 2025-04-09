@@ -3,7 +3,7 @@ const ctx = canvas.getContext('2d')
 
 document.addEventListener('keypress', (e)=>{
     if(e.code=='Space'){
-        personagem.saltar()
+        jogo.personagem.saltar()
     }
 })
 
@@ -60,10 +60,10 @@ class Personagem extends Entidade{
     }
     verificarColisao(){
         if(
-            obstaculo.x < this.x + this.largura &&
-            obstaculo.x + obstaculo.largura > this.x &&
-            this.y < obstaculo.y + obstaculo.altura &&
-            this.y + this.altura > obstaculo.y
+            jogo.obstaculo.x < this.x + this.largura &&
+            jogo.obstaculo.x + jogo.obstaculo.largura > this.x &&
+            this.y < jogo.obstaculo.y + jogo.obstaculo.altura &&
+            this.y + this.altura > jogo.obstaculo.y
         ){            
             obstaculo.velocidade_x = 0
             this.velocidade_y = 0
