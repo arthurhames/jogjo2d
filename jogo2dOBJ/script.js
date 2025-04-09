@@ -8,16 +8,30 @@ document.addEventListener('keypress', (e)=>{
 })
 
 class Entidade{
+    #x
+    #y
     constructor(x, y, largura, altura, cor){
-        this.x = x
-        this.y = y
+        this.#x = x
+        this.#y = y
         this.largura = largura
         this.altura = altura
         this.cor = cor
     }
     desenhar(){
         ctx.fillStyle = this.cor
-        ctx.fillRect(this.x, this.y, this.largura, this.altura)
+        ctx.fillRect(this.#x, this.#y, this.largura, this.altura)
+    }
+    get x(){
+        return this.#x
+    }
+    set x(valor){
+        this.#x = valor
+    }
+    get y(){
+        return this.#y
+    }
+    set y(valor){
+        this.#y = valor
     }
 }
 
