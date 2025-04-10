@@ -1,36 +1,38 @@
 const canvas = document.getElementById('jogoCanvas')
 const ctx = canvas.getContext('2d')
-
-document.addEventListener('keypress', (e)=>{
+ 
+document.addEventListener('keypress', (e) => {
     if(e.code=='Space'){
         jogo.personagem.saltar()
     }
 })
 
-class Entidade{
+class Entidade {
     #x
     #y
     constructor(x, y, largura, altura, cor){
-        this.#x = x
-        this.#y = y
-        this.largura = largura
-        this.altura = altura
+        this.#x = x;
+        this.#y = y;
+        this.largura = largura;
+        this.altura = altura;
         this.cor = cor
     }
-    desenhar(){
+    desenhar () {
         ctx.fillStyle = this.cor
         ctx.fillRect(this.#x, this.#y, this.largura, this.altura)
     }
-    get x(){
+    get x () {
         return this.#x
     }
-    set x(valor){
+    set x (valor) {
+        //adicionar uma condição para verificar quem pode mexer
         this.#x = valor
     }
-    get y(){
+    get y () {
         return this.#y
     }
-    set y(valor){
+    set y (valor) {
+        //adicionar uma condição para verificar quem pode mexer
         this.#y = valor
     }
 }
@@ -41,81 +43,121 @@ class Personagem extends Entidade{
         super(x, y, largura, altura, cor)
         this.#velocidade_y = 0
         this.pulando = false
+        this.imagem = new Image()
+        this.imagem.src = '../perso.png'
     }
     saltar(){
-        this.#velocidade_y= 15
+        this.#velocidade_y = 15
         this.pulando = true
     }
     atualizar(){
-        if (this.pulando){
+        if (this.pulando) {
             this.y -= this.#velocidade_y
             this.#velocidade_y -= Jogo.gravidade
-            if (this.y >= canvas.height - 50){
-                this.y = canvas.height - 50
+            if (this.y >= canvas.height - 50) {
                 this.#velocidade_y = 0
+                this.y = canvas.height - 50
                 this.pulando = false
             }
         }
-        
     }
-    verificarColisao(){
-        if(
-            jogo.obstaculo.x < this.x + this.largura &&
-            jogo.obstaculo.x + jogo.obstaculo.largura > this.x &&
-            this.y < jogo.obstaculo.y + jogo.obstaculo.altura &&
-            this.y + this.altura > jogo.obstaculo.y
-        ){            
+    verificaColisão(obstaculo){
+        if (
+            obstaculo.x < this.x + this.largura &&
+            obstaculo.largura + obstaculo.x > this.x &&
+            this.y < obstaculo.y + obstaculo.altura &&
+            this.y + this.altura > obstaculo.y
+        ) {
             obstaculo.velocidade_x = 0
             this.velocidade_y = 0
             ctx.fillStyle = 'black'
-            ctx.font = '50px Times new Roman'
-            ctx.fillText('GAME OVER', 250, 200)
+            ctx.font = '50px Arial'
+            ctx.fillText('GAME OVER', 50, 100)
             Jogo.gameOver = true
-            ctx.font = '20px Times new Roman'
-            if (pontuacao_atual > pontuacaoMaxima) {
-                localStorage.setItem('PM', pontuacao_atual)
-                ctx.fillText(`Novo recorde: ${pontuacao_atual}`, 50, 150)
+            ctx.font = '20px Arial'
+            if (Jogo.pontuacao_atual > Jogo.pontuacao_maxima) {
+                localStorage.setItem('PM', Jogo.pontuacao_atual)
+                ctx.fillText(`Novo Record: ${Jogo.pontuacao_atual}`, 50, 150)
                 return
             }
-            ctx.fillText(`Pontos da Jogada: ${pontuacao_atal}`, 50, 150)
+            ctx.fillText(`Pontos da jogada: ${Jogo.pontuacao_atual}`, 50, 150)
         }
+    }
+    desenhar(){
+        ctx.drawImage(
+            this.imagem,
+            this.x,
+            this.y,
+            this.largura,
+            this.altura )
     }
 }
 
 class Obstaculo extends Entidade{
     #velocidade_x
-    constructor(x, y, largura, altura, cor){
+    constructor(x, y, largura, altura, cor, velocidade=3){
         super(x, y, largura, altura, cor)
-        this.#velocidade_x = 0
+        this.#velocidade_x = velocidade
+        this.imagem = new Image()
+        this.imagem.src = '../vilao.png'
+        this.time_to_next = Math.floor(Math.random() * 200) + 300
+        this.criou_novo = false
     }
     atualizar(){
         this.x -= this.#velocidade_x
-        if (this.x <=0 - this.largura < 0) {
-            this.x = canvas.width
-            this.#velocidade_x += 1
-            this.altura = Math.random() * (150-90) +90
-            this.altura = nova_altura
-            this.y = canvas.height - nova_altura
-        }
+    if (this.x <= 0 - this.largura) { //se chegou no final
+        jogo.obstaculos.splice()
+    }
+    if (this.time_to_next > this.x && this.criou_novo == false){
+        jogo.criarNovoObstaculo()
+        this.criou_novo = true
         
+    }
+}
+    desenhar(){
+        ctx.drawImage(
+            this.imagem,
+            this.x,
+            this.y,
+            this.largura,
+            this.altura )
     }
 }
 
 class Jogo{
     static gravidade = 0.5
     static gameOver = false
-    constructor(){   
-        this.personagem= new Personagem(100, canvas.heigth -50, 50, 50, 'red')
-        this.obstaculo= new Obstaculo(canvas.width -50, canvas.heigth -100, 50, 'black')
+    static pontuacao_atual = 0
+    static pontuacao_maxima = localStorage.getItem('PM') ? localStorage.getItem('PM') : 0
+    constructor(){
+        this.loop = this.loop.bind(this)
+        this.personagem = new Personagem(100, canvas.height - 50, 50, 50, 'blue')
+        this.obstaculos = [new Obstaculo(canvas.width - 50, canvas.height - 100, 50, 100)]
     }
-    loop(){
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        this.personagem.desenhar()
-        this.obstaculo.desenhar()
-        this.obstaculo.atualizar()
-        this.personagem.atualizar()
-        this.personagem.verificarColisao()
-        requestAnimationFrame(this.loop)
+    loop () { 
+        if (!Jogo.gameOver){
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            this.mostrarPontuacao()
+            this.obstaculos.forEach(obstaculo => {
+                obstaculo.desenhar()
+                obstaculo.atualizar(jogo)
+                this.personagem.verificaColisão(obstaculo)
+            });
+            this.personagem.desenhar()
+            this.personagem.atualizar()
+            Jogo.pontuacao_atual += 1
+            requestAnimationFrame(this.loop)
+        }
+    }
+    mostrarPontuacao () {
+        ctx.font = '20px Arial'
+        ctx.fillText(`${Jogo.pontuacao_atual}`, 30, 30)
+    }
+    criarNovoObstaculo(){
+        let nova_altura = Math.floor(Math.random() * (150 - 90)) + 90 //calcula uma nova altura
+        let nova_vel= Math.floor(Math.random()*5)+1
+        let novo_y = canvas.height - nova_altura //muda a posicao do personagem
+        this.obstaculos.push(new Obstaculo(canvas.width, novo_y, 50, nova_altura, '', nova_vel ))
     }
 }
 
